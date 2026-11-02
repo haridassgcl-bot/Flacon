@@ -1,0 +1,33 @@
+{
+  "name": "flacon-marketplace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Flacon - Buy. Sell. Connect. Multi-category classifieds marketplace for Tamil Nadu",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "backend"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:admin": "npm run dev --workspace=apps/admin",
+    "dev:api": "npm run dev --workspace=backend",
+    "dev:mobile": "npm run start --workspace=apps/mobile",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:admin": "npm run build --workspace=apps/admin",
+    "build:api": "npm run build --workspace=backend",
+    "test": "npm test --workspaces --if-present"
+  },
+  "keywords": [
+    "flacon",
+    "classifieds",
+    "marketplace",
+    "react",
+    "vite",
+    "expo",
+    "supabase",
+    "tamil-nadu"
+  ],
+  "author": "Flacon Team",
+  "license": "UNLICENSED"
+}
