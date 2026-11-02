@@ -104,7 +104,11 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (error) throw error;
 
     // Increment view count asynchronously
-    await supabase.rpc('increment_view_count', { listing_id: id }).catch(() => {});
+    try {
+      await supabase.rpc('increment_view_count', { listing_id: id });
+    } catch {
+      // Ignore background view increment error
+    }
 
     res.json(listing);
   } catch (err: any) {

@@ -1,7 +1,7 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "Sellora Marketplace REST API and Realtime Engine",
+  "description": "Flacon Marketplace REST API and Realtime Engine",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",

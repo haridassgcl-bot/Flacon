@@ -13,19 +13,36 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Dynamic CORS configuration accommodating local dev, preview URLs, and custom domains
 app.use(cors({
-  origin: [
-    process.env.CLIENT_URL || 'http://localhost:5173',
-    process.env.ADMIN_URL || 'http://localhost:5174',
-    'http://localhost:3000'
-  ],
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin) return callback(null, true);
+    if (
+      origin.includes('localhost') || 
+      origin.includes('127.0.0.1') || 
+      origin.endsWith('.vercel.app')
+    ) {
+      return callback(null, true);
+    }
+    const allowed = [
+      process.env.CLIENT_URL,
+      process.env.ADMIN_URL
+    ].filter(Boolean) as string[];
+    if (allowed.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
+
 app.use(express.json());
 
-// Base Health Check
-app.get('/api/health', (req: Request, res: Response) => {
+// Main API Router
+const apiRouter = express.Router();
+
+// Health Check
+apiRouter.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     service: 'Flacon Marketplace API',
@@ -34,15 +51,40 @@ app.get('/api/health', (req: Request, res: Response) => {
   });
 });
 
-// Feature Routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/listings', listingRoutes);
-app.use('/api/locations', locationRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/moderation', moderationRoutes);
-
-app.listen(PORT, () => {
-  console.log(`🚀 Flacon API server running on port ${PORT}`);
+// Root API Info
+apiRouter.get('/', (_req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    service: 'Flacon Marketplace API',
+    endpoints: [
+      '/health',
+      '/v1/auth',
+      '/categories',
+      '/listings',
+      '/locations',
+      '/payments',
+      '/moderation'
+    ]
+  });
 });
 
+// Feature Routes
+apiRouter.use('/v1/auth', authRoutes);
+apiRouter.use('/categories', categoryRoutes);
+apiRouter.use('/listings', listingRoutes);
+apiRouter.use('/locations', locationRoutes);
+apiRouter.use('/payments', paymentRoutes);
+apiRouter.use('/moderation', moderationRoutes);
+
+// Mount router under both /api and / so it works regardless of Vercel path prefix rewriting
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
+
+// Start server when run directly (local development)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Flacon API server running on port ${PORT}`);
+  });
+}
+
+export default app;

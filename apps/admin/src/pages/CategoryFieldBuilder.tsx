@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, CheckCircle2, Layers, Sliders } from 'lucide-react';
-import { MOCK_CATEGORIES } from '../../web/src/data/mockData';
+import { ADMIN_CATEGORIES, Category, SubCategory, CustomField } from '../data/categories';
 
 export const CategoryFieldBuilder: React.FC = () => {
-  const [categories, setCategories] = useState(MOCK_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>(ADMIN_CATEGORIES);
   const [selectedCatId, setSelectedCatId] = useState<number>(categories[0].id);
   const [selectedSubcatId, setSelectedSubcatId] = useState<number>(categories[0].subcategories[0].id);
 
@@ -15,16 +15,16 @@ export const CategoryFieldBuilder: React.FC = () => {
   const [newOptions, setNewOptions] = useState('');
   const [isRequired, setIsRequired] = useState(false);
 
-  const currentCat = categories.find(c => c.id === selectedCatId);
-  const currentSubcat = currentCat?.subcategories.find(s => s.id === selectedSubcatId);
+  const currentCat = categories.find((c: Category) => c.id === selectedCatId);
+  const currentSubcat = currentCat?.subcategories.find((s: SubCategory) => s.id === selectedSubcatId);
 
   const handleAddField = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFieldName || !newLabelEn) return;
 
-    const parsedOptions = newOptions ? newOptions.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const parsedOptions = newOptions ? newOptions.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
 
-    const newField = {
+    const newField: CustomField = {
       field_name: newFieldName.toLowerCase().replace(/\s+/g, '_'),
       label_en: newLabelEn,
       label_ta: newLabelTa || newLabelEn,
@@ -33,11 +33,11 @@ export const CategoryFieldBuilder: React.FC = () => {
       is_required: isRequired
     };
 
-    setCategories(prev => prev.map(cat => {
+    setCategories((prev: Category[]) => prev.map((cat: Category) => {
       if (cat.id !== selectedCatId) return cat;
       return {
         ...cat,
-        subcategories: cat.subcategories.map(sub => {
+        subcategories: cat.subcategories.map((sub: SubCategory) => {
           if (sub.id !== selectedSubcatId) return sub;
           return {
             ...sub,
@@ -56,15 +56,15 @@ export const CategoryFieldBuilder: React.FC = () => {
   };
 
   const handleRemoveField = (fieldName: string) => {
-    setCategories(prev => prev.map(cat => {
+    setCategories((prev: Category[]) => prev.map((cat: Category) => {
       if (cat.id !== selectedCatId) return cat;
       return {
         ...cat,
-        subcategories: cat.subcategories.map(sub => {
+        subcategories: cat.subcategories.map((sub: SubCategory) => {
           if (sub.id !== selectedSubcatId) return sub;
           return {
             ...sub,
-            fields: sub.fields.filter(f => f.field_name !== fieldName)
+            fields: sub.fields.filter((f: CustomField) => f.field_name !== fieldName)
           };
         })
       };
@@ -96,12 +96,12 @@ export const CategoryFieldBuilder: React.FC = () => {
               onChange={(e) => {
                 const id = Number(e.target.value);
                 setSelectedCatId(id);
-                const firstSub = categories.find(c => c.id === id)?.subcategories[0]?.id;
+                const firstSub = categories.find((c: Category) => c.id === id)?.subcategories[0]?.id;
                 if (firstSub) setSelectedSubcatId(firstSub);
               }}
               className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200"
             >
-              {categories.map((c) => (
+              {categories.map((c: Category) => (
                 <option key={c.id} value={c.id}>{c.name_en} ({c.name_ta})</option>
               ))}
             </select>
@@ -114,7 +114,7 @@ export const CategoryFieldBuilder: React.FC = () => {
               onChange={(e) => setSelectedSubcatId(Number(e.target.value))}
               className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200"
             >
-              {currentCat?.subcategories.map((s) => (
+              {currentCat?.subcategories.map((s: SubCategory) => (
                 <option key={s.id} value={s.id}>{s.name_en} ({s.name_ta})</option>
               ))}
             </select>
@@ -128,104 +128,120 @@ export const CategoryFieldBuilder: React.FC = () => {
             <span>Add Custom Field for {currentSubcat?.name_en}</span>
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-slate-300 font-semibold">Technical Field Key (e.g. battery_health) *</label>
+              <label className="text-xs font-semibold text-slate-300">English Label *</label>
               <input
                 type="text"
-                required
-                placeholder="e.g. warranty_period"
-                value={newFieldName}
-                onChange={(e) => setNewFieldName(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-slate-300 font-semibold">Label in English *</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Warranty Period"
+                placeholder="e.g. Battery Health (%)"
                 value={newLabelEn}
-                onChange={(e) => setNewLabelEn(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none"
+                onChange={(e) => {
+                  setNewLabelEn(e.target.value);
+                  if (!newFieldName) setNewFieldName(e.target.value);
+                }}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white"
+                required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-slate-300 font-semibold">Label in Tamil (தமிழ்)</label>
+              <label className="text-xs font-semibold text-slate-300">Tamil Label (விருப்பத்திற்குரியது)</label>
               <input
                 type="text"
-                placeholder="e.g. உத்தரவாத காலம்"
+                placeholder="எ.கா. பேட்டரி தரம்"
                 value={newLabelTa}
                 onChange={(e) => setNewLabelTa(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-slate-300 font-semibold">Field Input Type</label>
+              <label className="text-xs font-semibold text-slate-300">Internal Field Key (system identifier)</label>
+              <input
+                type="text"
+                placeholder="e.g. battery_health"
+                value={newFieldName}
+                onChange={(e) => setNewFieldName(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-300">Field Input Type</label>
               <select
                 value={newFieldType}
                 onChange={(e) => setNewFieldType(e.target.value as any)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white"
               >
-                <option value="select">Dropdown Select (Predefined Options)</option>
-                <option value="text">Text Input (Open description)</option>
-                <option value="number">Numeric (e.g. KM, SqFt, Year)</option>
+                <option value="select">Dropdown Options (select)</option>
+                <option value="text">Text Input (text)</option>
+                <option value="number">Numeric (number)</option>
               </select>
             </div>
           </div>
 
           {newFieldType === 'select' && (
-            <div className="space-y-1 text-xs">
-              <label className="text-slate-300 font-semibold">Dropdown Options (Comma separated)</label>
+            <div className="space-y-1 pt-2">
+              <label className="text-xs font-semibold text-slate-300">
+                Dropdown Options <span className="text-slate-400 font-normal">(Comma-separated)</span>
+              </label>
               <input
                 type="text"
-                placeholder="e.g. 1 Year, 2 Years, Under Warranty, Expired"
+                placeholder="e.g. 100%, 90% - 99%, 80% - 89%, Below 80%"
                 value={newOptions}
                 onChange={(e) => setNewOptions(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-200 focus:outline-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white"
               />
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-2">
-            <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isRequired}
-                onChange={(e) => setIsRequired(e.target.checked)}
-                className="rounded text-emerald-500 bg-slate-900 border-slate-700"
-              />
-              <span>Mandatory field when posting an ad</span>
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="is_required"
+              checked={isRequired}
+              onChange={(e) => setIsRequired(e.target.checked)}
+              className="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700"
+            />
+            <label htmlFor="is_required" className="text-xs text-slate-300 font-medium cursor-pointer">
+              Mandatory field (Sellers must provide this value)
             </label>
+          </div>
 
+          <div className="pt-2 flex justify-end">
             <button
               type="submit"
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow"
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-lg transition"
             >
-              + Save Field
+              <Plus className="w-4 h-4" />
+              Save Dynamic Field
             </button>
           </div>
         </form>
 
       </div>
 
-      {/* Existing Dynamic Fields Table */}
-      <div className="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-emerald-400" />
-          <span>Active Form Fields for {currentSubcat?.name_en}</span>
-        </h2>
+      {/* Existing Configured Fields for this category */}
+      <div className="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <Sliders className="w-4 h-4 text-emerald-400" />
+            <span>Configured Fields for: <span className="text-emerald-400">{currentCat?.name_en} &gt; {currentSubcat?.name_en}</span></span>
+          </h2>
+          <span className="text-xs bg-slate-900 text-slate-300 px-3 py-1 rounded-full border border-slate-700">
+            {currentSubcat?.fields.length || 0} Dynamic Fields
+          </span>
+        </div>
 
         {currentSubcat?.fields.length === 0 ? (
-          <p className="text-xs text-slate-400 py-3">No dynamic fields configured yet for this subcategory.</p>
+          <div className="text-center py-10 text-slate-400 text-xs">
+            No custom fields configured for this subcategory yet.
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-700">
+              <thead className="bg-slate-900/80 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-700">
                 <tr>
                   <th className="py-2.5 px-3">Field Key</th>
                   <th className="py-2.5 px-3">English Label</th>
@@ -237,7 +253,7 @@ export const CategoryFieldBuilder: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/50">
-                {currentSubcat?.fields.map((f) => (
+                {currentSubcat?.fields.map((f: CustomField) => (
                   <tr key={f.field_name} className="hover:bg-slate-750">
                     <td className="py-3 px-3 font-mono text-emerald-400 font-semibold">{f.field_name}</td>
                     <td className="py-3 px-3 font-bold text-white">{f.label_en}</td>
@@ -273,4 +289,3 @@ export const CategoryFieldBuilder: React.FC = () => {
     </div>
   );
 };
-
