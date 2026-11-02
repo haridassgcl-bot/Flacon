@@ -37,3 +37,6 @@ coverage/
 playwright-report/
 test-results/
 
+# GitHub Workflows (requires 'workflow' PAT scope to push)
+.github/
+
